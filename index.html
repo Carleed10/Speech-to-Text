@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech to Text & Repeat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #transcript {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            min-height: 50px;
+            background: #fafafa;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #stopBtn {
+            background-color: #FF4C4C;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Speech-to-Text & Repeat</h1>
+        <button id="startBtn" onclick="startListening()">Start Listening</button>
+        <button id="stopBtn" onclick="stopListening()">Stop Listening</button>
+        <div id="transcript">Waiting for speech...</div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+
+        // Check if browser supports SpeechRecognition
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = true;  // Keep listening continuously
+            recognition.interimResults = false; // Only return final results
+            recognition.lang = 'en-US'; // Set language
+        } else {
+            alert("Your browser does not support Speech Recognition.");
+        }
+
+        function startListening() {
+            if (!isListening) {
+                recognition.start();
+                isListening = true;
+                document.getElementById("transcript").innerText = "Listening...";
+            }
+        }
+
+        function stopListening() {
+            if (isListening) {
+                recognition.stop();
+                isListening = false;
+                document.getElementById("transcript").innerText = "Stopped listening.";
+            }
+        }
+
+        // When speech is recognized
+        recognition.onresult = function(event) {
+            let speechText = event.results[event.results.length - 1][0].transcript;
+            document.getElementById("transcript").innerText = "You said: " + speechText;
+
+            // Repeat what was said after 3 seconds
+            setTimeout(() => {
+                repeatSpeech(speechText);
+            }, 3000);
+        };
+
+        // Function to repeat the speech
+        function repeatSpeech(text) {
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "en-US";
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Handle errors
+        recognition.onerror = function(event) {
+            console.error("Speech recognition error:", event.error);
+            document.getElementById("transcript").innerText = "Error occurred: " + event.error;
+        };
+    </script>
+
+</body>
+</html>
